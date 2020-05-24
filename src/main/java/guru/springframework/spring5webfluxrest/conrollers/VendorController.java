@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 /**
  * Created by morgan on 22.05.2020
  */
@@ -43,5 +45,27 @@ public class VendorController {
     Mono<Vendor> updateById(@PathVariable String id, @RequestBody Vendor vendor) {
         vendor.setId(id);
         return vendorRepository.save(vendor);
+    }
+
+    @PatchMapping("/{id}")
+    Mono<Vendor> patchById(@PathVariable String id, @RequestBody Vendor vendor) {
+        Vendor existing = vendorRepository.findById(id).block();
+        if(existing == null) {
+            throw new IllegalArgumentException("No vendor found by id:" + id);
+        }
+        boolean changed = false;
+        if(!Objects.equals(existing.getFirstName(), vendor.getFirstName())) {
+            existing.setFirstName(vendor.getFirstName());
+            changed = true;
+        }
+        if(!Objects.equals(existing.getLastName(), vendor.getLastName())) {
+            existing.setLastName(vendor.getLastName());
+            changed = true;
+        }
+        if(changed) {
+            return vendorRepository.save(existing);
+        }
+
+        return Mono.just(existing);
     }
 }

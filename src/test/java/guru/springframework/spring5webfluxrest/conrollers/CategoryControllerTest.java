@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class CategoryControllerTest {
 
@@ -51,7 +52,7 @@ public class CategoryControllerTest {
     }
 
     @Test
-    public void createCategoryTest() {
+    public void testCreate() {
         BDDMockito.given(categoryRepository.saveAll(any(Publisher.class)))
                 .willReturn(Flux.just(Category.builder().description("descrp").build()));
 
@@ -66,13 +67,31 @@ public class CategoryControllerTest {
     }
 
     @Test
-    public void testUpdateCategory() {
+    public void testUpdate() {
         BDDMockito.given(categoryRepository.save(any(Category.class)))
                 .willReturn(Mono.just(Category.builder().description("descrp").build()));
 
         Mono<Category> savedCategory = Mono.just(Category.builder().description("Some Cat").build());
 
         webTestClient.put()
+                .uri("/api/v1/categories/jhjkh")
+                .body(savedCategory, Category.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+    }
+
+    @Test
+    public void testPatch() {
+        BDDMockito.given(categoryRepository.findById(anyString()))
+                .willReturn(Mono.just(Category.builder().description("d1").build()));
+
+        BDDMockito.given(categoryRepository.save(any(Category.class)))
+                .willReturn(Mono.just(Category.builder().description("descrp").build()));
+
+        Mono<Category> savedCategory = Mono.just(Category.builder().description("Some Cat").build());
+
+        webTestClient.patch()
                 .uri("/api/v1/categories/jhjkh")
                 .body(savedCategory, Category.class)
                 .exchange()

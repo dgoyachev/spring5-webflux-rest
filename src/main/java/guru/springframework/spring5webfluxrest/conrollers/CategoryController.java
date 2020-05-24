@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 /**
  * Created by morgan on 21.05.2020
  */
@@ -42,5 +44,18 @@ public class CategoryController {
     Mono<Category> updateById(@PathVariable String id, @RequestBody Category category) {
         category.setId(id);
         return categoryRepository.save(category);
+    }
+
+    @PatchMapping("/{id}")
+    Mono<Category> patchById(@PathVariable String id, @RequestBody Category category) {
+        Category existing = categoryRepository.findById(id).block();
+        if(existing == null) {
+            throw new IllegalArgumentException("No category found by id " + id);
+        }
+        if(!Objects.equals(existing.getDescription(), category.getDescription())) {
+            existing.setDescription(category.getDescription());
+            return categoryRepository.save(existing);
+        }
+        return Mono.just(existing);
     }
 }
